@@ -33,10 +33,6 @@ describe "User pages" do
           expect(page).to have_selector('li', text: user.name)
         end
       end
-      #  User.all.each do |user|
-      #    expect(page).to have_selector('li', text:user.name)
-      #  end
-      #end
     end
 
     describe "delete links" do
@@ -56,6 +52,35 @@ describe "User pages" do
           end.to change(User, :count).by(-1)
         end
         it { should_not have_link('delete', href: user_path(admin)) }
+      end
+    end
+
+    describe "following/followers" do
+      let(:user) { FactoryGirl.create(:user) }
+      let(:other_user) { FactoryGirl.create(:user) }
+      before { user.follow!(other_user) }
+
+      describe "followed users" do
+        before do
+          sign_in user
+          visit following_user_path(user)
+        end
+
+        it { should have_title(full_title('Following')) }
+        it { should have_selector('h3', text: 'Following') }
+        it { should have_link(other_user.name, href: user_path(other_user)) }
+      end
+
+      describe "followers" do
+        before do
+          sign_in other_user
+          visit followers_user_path(other_user)
+        end
+
+        it { should have_title(full_title('Followers')) }
+        it { should have_selector('h3', text: 'Followers') }
+        it { should have_link(user.name, href: user_path(user)) }
+
       end
     end
   end
